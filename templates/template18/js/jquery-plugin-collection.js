@@ -21144,6 +21144,7 @@ jQuery(document).ready(function () {
     allowParentLinks: true,
     label: "",
   });
+  
   $(window).scroll(function () {
     if ($(window).scrollTop() > 10) {
       $(".navbar").addClass("navbar-sticky-in");
