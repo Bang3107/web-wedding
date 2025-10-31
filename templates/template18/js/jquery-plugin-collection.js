@@ -21123,7 +21123,7 @@ licensed under MIT
 ("use strict");
 jQuery(document).ready(function () {
   var $slicknav_label;
-/*  $(".responsive-menu").slicknav({
+  /*  $(".responsive-menu").slicknav({
     duration: 500,
     easingOpen: "easeInExpo",
     easingClose: "easeOutExpo",
@@ -21144,7 +21144,7 @@ jQuery(document).ready(function () {
     allowParentLinks: true,
     label: "",
   });
-  
+
   $(window).scroll(function () {
     if ($(window).scrollTop() > 10) {
       $(".navbar").addClass("navbar-sticky-in");
