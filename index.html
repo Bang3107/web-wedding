@@ -2699,86 +2699,82 @@
     <script src="./templates/template18/js/script.js"></script>
     <script src="./common/biicommon.min.js"></script>
     <script type="text/javascript">
-      // Fix frozen snowflakes - ensure animation loop stays active
+      // Fix snowflakes issues: frozen flakes and scroll visibility
       (function() {
-        var animationLoopInterval;
-        var snowfallContainer = null;
-        var isAnimationActive = false;
+        var checkInterval;
+        var flakePositions = new Map();
         
-        function ensureSnowAnimationRunning() {
+        function fixSnowflakesVisibility() {
           var flakes = document.querySelectorAll('.snowfall-flakes');
           if (flakes.length === 0) return;
           
-          // Get the first flake's parent (snowfall container)
-          snowfallContainer = flakes[0].parentElement;
-          
-          // Check if any flake has a "snow" property (means it's managed by snowFall)
-          var hasSnowObj = snowfallContainer && snowfallContainer.snow;
-          
-          if (!hasSnowObj) {
-            // Try to restart/reinitialize snow effect
-            // Wait a bit for biicommon to finish loading
-            setTimeout(function() {
-              ensureSnowAnimationRunning();
-            }, 500);
-            return;
+          // Ensure body can contain positioned flakes
+          var body = document.body;
+          if (getComputedStyle(body).position === 'static') {
+            body.style.position = 'relative';
           }
           
-          // Monitor for frozen flakes
-          var flakePositions = new Map();
-          
-          var checkInterval = setInterval(function() {
-            var frozenCount = 0;
+          // Set fixed positioning to ensure flakes appear across all scroll positions
+          flakes.forEach(function(flake) {
+            var id = flake.id || flake._flakeId;
+            if (!id) {
+              id = 'flake_' + Math.random();
+              flake._flakeId = id;
+            }
             
-            flakes.forEach(function(flake) {
-              var id = flake.id || flake._flakeId;
-              if (!id) {
-                id = 'flake_' + Math.random();
-                flake._flakeId = id;
-              }
-              
+            // Change from absolute to fixed positioning so flakes appear everywhere on page
+            if (flake.style.position !== 'fixed') {
               var currentTop = parseFloat(flake.style.top);
               var currentLeft = parseFloat(flake.style.left);
               
-              var lastPos = flakePositions.get(id);
-              
-              if (lastPos) {
-                // Check if position changed since last check
-                if (Math.abs(currentTop - lastPos.top) < 0.1 && 
-                    Math.abs(currentLeft - lastPos.left) < 0.1) {
-                  frozenCount++;
-                  lastPos.staticCount = (lastPos.staticCount || 0) + 1;
-                  
-                  // If frozen for too long, manually update position
-                  if (lastPos.staticCount > 8) {
-                    // Reset position to top to re-animate
-                    flake.style.top = (Math.random() * -50 - 10) + 'px';
-                    flake.style.left = (Math.random() * window.innerWidth) + 'px';
-                    lastPos.staticCount = 0;
-                  }
-                } else {
+              // Calculate position relative to viewport
+              var rect = flake.getBoundingClientRect();
+              flake.style.position = 'fixed';
+              flake.style.top = rect.top + 'px';
+              flake.style.left = rect.left + 'px';
+            }
+            
+            // Monitor for frozen flakes
+            var currentTop = parseFloat(flake.style.top);
+            var currentLeft = parseFloat(flake.style.left);
+            var lastPos = flakePositions.get(id);
+            
+            if (lastPos) {
+              // Check if position changed since last check
+              if (Math.abs(currentTop - lastPos.top) < 0.5 && 
+                  Math.abs(currentLeft - lastPos.left) < 0.5) {
+                lastPos.staticCount = (lastPos.staticCount || 0) + 1;
+                
+                // If frozen for too long, reset it
+                if (lastPos.staticCount > 6) {
+                  flake.style.top = (Math.random() * -50 - 10) + 'px';
+                  flake.style.left = (Math.random() * window.innerWidth) + 'px';
                   lastPos.staticCount = 0;
                 }
+              } else {
+                lastPos.staticCount = 0;
               }
-              
-              flakePositions.set(id, {
-                top: currentTop,
-                left: currentLeft,
-                staticCount: (lastPos && lastPos.staticCount) || 0
-              });
-            });
+            }
             
-            isAnimationActive = frozenCount < (flakes.length * 0.3); // Less than 30% frozen
-          }, 300);
-          
-          // Cleanup on page unload
-          window.addEventListener('beforeunload', function() {
-            if (checkInterval) clearInterval(checkInterval);
+            flakePositions.set(id, {
+              top: currentTop,
+              left: currentLeft,
+              staticCount: (lastPos && lastPos.staticCount) || 0
+            });
           });
         }
         
-        // Start checking after snow initializes
-        setTimeout(ensureSnowAnimationRunning, 3000);
+        // Start checking after snow initializes (wait for biicommon.min.js)
+        setTimeout(function() {
+          fixSnowflakesVisibility();
+          // Then check periodically to handle frozen flakes
+          checkInterval = setInterval(fixSnowflakesVisibility, 300);
+        }, 3000);
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+          if (checkInterval) clearInterval(checkInterval);
+        });
       })();
     </script>
     <style type="text/css">
