@@ -2,7 +2,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Nguyễn Chương Trung &amp; Phạm Minh Tâm!</title>
+    <title>Chương Trung &amp; Minh Tâm Wedding site!</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <meta
@@ -2698,6 +2698,89 @@
     <script src="./common/calendar.js"></script>
     <script src="./templates/template18/js/script.js"></script>
     <script src="./common/biicommon.min.js"></script>
+    <script type="text/javascript">
+      // Fix frozen snowflakes - ensure animation loop stays active
+      (function() {
+        var animationLoopInterval;
+        var snowfallContainer = null;
+        var isAnimationActive = false;
+        
+        function ensureSnowAnimationRunning() {
+          var flakes = document.querySelectorAll('.snowfall-flakes');
+          if (flakes.length === 0) return;
+          
+          // Get the first flake's parent (snowfall container)
+          snowfallContainer = flakes[0].parentElement;
+          
+          // Check if any flake has a "snow" property (means it's managed by snowFall)
+          var hasSnowObj = snowfallContainer && snowfallContainer.snow;
+          
+          if (!hasSnowObj) {
+            // Try to restart/reinitialize snow effect
+            // Wait a bit for biicommon to finish loading
+            setTimeout(function() {
+              ensureSnowAnimationRunning();
+            }, 500);
+            return;
+          }
+          
+          // Monitor for frozen flakes
+          var flakePositions = new Map();
+          
+          var checkInterval = setInterval(function() {
+            var frozenCount = 0;
+            
+            flakes.forEach(function(flake) {
+              var id = flake.id || flake._flakeId;
+              if (!id) {
+                id = 'flake_' + Math.random();
+                flake._flakeId = id;
+              }
+              
+              var currentTop = parseFloat(flake.style.top);
+              var currentLeft = parseFloat(flake.style.left);
+              
+              var lastPos = flakePositions.get(id);
+              
+              if (lastPos) {
+                // Check if position changed since last check
+                if (Math.abs(currentTop - lastPos.top) < 0.1 && 
+                    Math.abs(currentLeft - lastPos.left) < 0.1) {
+                  frozenCount++;
+                  lastPos.staticCount = (lastPos.staticCount || 0) + 1;
+                  
+                  // If frozen for too long, manually update position
+                  if (lastPos.staticCount > 8) {
+                    // Reset position to top to re-animate
+                    flake.style.top = (Math.random() * -50 - 10) + 'px';
+                    flake.style.left = (Math.random() * window.innerWidth) + 'px';
+                    lastPos.staticCount = 0;
+                  }
+                } else {
+                  lastPos.staticCount = 0;
+                }
+              }
+              
+              flakePositions.set(id, {
+                top: currentTop,
+                left: currentLeft,
+                staticCount: (lastPos && lastPos.staticCount) || 0
+              });
+            });
+            
+            isAnimationActive = frozenCount < (flakes.length * 0.3); // Less than 30% frozen
+          }, 300);
+          
+          // Cleanup on page unload
+          window.addEventListener('beforeunload', function() {
+            if (checkInterval) clearInterval(checkInterval);
+          });
+        }
+        
+        // Start checking after snow initializes
+        setTimeout(ensureSnowAnimationRunning, 3000);
+      })();
+    </script>
     <style type="text/css">
       .mouse-scroll-on-mobile {
         display: none;
@@ -2781,7 +2864,7 @@
           -webkit-transform: rotate(-45deg);
         }
       }
-    </style>
+    </script>
     <div class="mouse-scroll-on-mobile" style="visibility: hidden">
       <div class="mouse-scroll-on-mobile-text">Kéo xuống</div>
       <div class="mouse-scroll-on-mobile-left"></div>

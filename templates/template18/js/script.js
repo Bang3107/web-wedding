@@ -300,15 +300,34 @@ flyingPages();
       centerMode: true,
       focusOnSelect: true,
     });
-     /* 
-    $(".navbar-nav").on("click", "a", function (e) {
-      var anchor = $(this);
-      $("html, body")
-        .stop()
-        .animate({ scrollTop: $(anchor.attr("href")).offset().top - 5 }, 1000);
-      e.preventDefault();
-    });
-      */
+     
+    // $(".navbar-nav").on("click", "a", function (e) {
+    //   var anchor = $(this);
+    //   $("html, body")
+    //     .stop()
+    //     .animate({ scrollTop: $(anchor.attr("href")).offset().top - 5 }, 1000);
+    //   e.preventDefault();
+    // });
+    // gemini
+    
+$(".navbar-nav").on("click", "a", function (e) {
+  var href = $(this).attr("href");
+  $(".navbar-collapse").removeClass("in");
+  if (href && href.startsWith("#") && $(href).length) {
+//    e.preventDefault();
+    $("html, body")
+      .stop()
+      .animate(
+        {
+          scrollTop:
+            $(href).offset().top - $(".navbar-fixed-top").outerHeight(),
+        },
+        800
+      );
+  }
+});
+
+
     $(".navbar-nav").on("click", "a", function () {
       $(".navbar-collapse").removeClass("in");
     });
